@@ -44,8 +44,8 @@ function AdminDashboard() {
                         <button
                             onClick={() => setActiveTab('items')}
                             className={`px-6 py-4 font-semibold border-b-2 transition-colors ${activeTab === 'items'
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-600 hover:text-gray-800'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-gray-600 hover:text-gray-800'
                                 }`}
                         >
                             📦 Items Management
@@ -53,8 +53,8 @@ function AdminDashboard() {
                         <button
                             onClick={() => setActiveTab('orders')}
                             className={`px-6 py-4 font-semibold border-b-2 transition-colors ${activeTab === 'orders'
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-600 hover:text-gray-800'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-gray-600 hover:text-gray-800'
                                 }`}
                         >
                             📋 Orders
@@ -264,8 +264,8 @@ function ItemsManagement() {
                                         <button
                                             onClick={() => toggleActive(item)}
                                             className={`px-3 py-1 rounded-full text-xs font-semibold ${item.active
-                                                    ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                    : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                                                 }`}
                                         >
                                             {item.active ? 'Active' : 'Inactive'}
