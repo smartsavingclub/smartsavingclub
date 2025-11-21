@@ -20,7 +20,23 @@ const WHATSAPP_PHONE = process.env.WHATSAPP_PHONE || '971561510897';
 const DELIVERY_FEE = parseFloat(process.env.DELIVERY_FEE || '0');
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://smartsavingclub.netlify.app'
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+}));
+
+app.options('*', cors());
 app.use(express.json());
 
 // Paths
