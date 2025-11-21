@@ -12,18 +12,36 @@ body {
     background-color: #f9fafb;
 }
 
-/* Ensure quantity spinners always appear on mobile */
-input[type="number"].quantity-input::-webkit-inner-spin-button,
-input[type="number"].quantity-input::-webkit-outer-spin-button {
-    -webkit-appearance: auto;
-    appearance: auto;
-    opacity: 1;
-    height: 40px;
+/* Force quantity spinners to always show on mobile */
+input[type="number"].quantity-input {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
-input[type="number"].quantity-input {
-    -moz-appearance: auto;
-    appearance: auto;
+input[type="number"].quantity-input::-webkit-inner-spin-button,
+input[type="number"].quantity-input::-webkit-outer-spin-button {
+    -webkit-appearance: inner-spin-button !important;
+    opacity: 1 !important;
+    display: inline-block !important;
+    height: auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    cursor: pointer;
+}
+
+/* Firefox spin buttons */
+input[type="number"].quantity-input::-moz-inner-spin-button,
+input[type="number"].quantity-input::-moz-outer-spin-button {
+    opacity: 1 !important;
+}
+
+/* Make spinners more visible on mobile */
+@media (max-width: 768px) {
+    input[type="number"].quantity-input {
+        font-size: 16px;
+        padding-right: 1rem;
+    }
 }
 
 .item-card {
