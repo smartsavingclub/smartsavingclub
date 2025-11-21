@@ -12,21 +12,18 @@ body {
     background-color: #f9fafb;
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-    opacity: 1;
-}
-
-.quantity-input::-webkit-inner-spin-button,
-.quantity-input::-webkit-outer-spin-button {
+/* Ensure quantity spinners always appear on mobile */
+input[type="number"].quantity-input::-webkit-inner-spin-button,
+input[type="number"].quantity-input::-webkit-outer-spin-button {
     -webkit-appearance: auto;
-    margin: 0;
+    appearance: auto;
     opacity: 1;
+    height: 40px;
 }
 
-.quantity-input {
-    -moz-appearance: textfield;
-    appearance: textfield;
+input[type="number"].quantity-input {
+    -moz-appearance: auto;
+    appearance: auto;
 }
 
 .item-card {

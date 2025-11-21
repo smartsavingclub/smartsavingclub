@@ -42,8 +42,8 @@ function OrderPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
-    // WhatsApp number (fixed, no plus)
-    const WHATSAPP_NUMBER = "971500000000";
+    // WhatsApp number (fixed, with plus)
+    const WHATSAPP_NUMBER = "+971561510897";
     // Customer info
     const [customerName, setCustomerName] = useState('')
     const [flatNumber, setFlatNumber] = useState('')
