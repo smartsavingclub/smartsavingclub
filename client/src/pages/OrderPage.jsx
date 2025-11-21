@@ -1,13 +1,49 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+
+// Helper to calculate totals for a flat array of items
+const calculateTotal = (items, quantities, deliveryFee = 0) => {
+    let total = 0;
+    items.forEach((item) => {
+        const qty = Number(quantities[item.id] || 0);
+        const price = Number(item.price || 0);
+        total += qty * price;
+    });
+    return {
+        itemsTotal: total,
+        grandTotal: total + Number(deliveryFee || 0)
+    };
+};
 
 const API_URL = import.meta.env.VITE_API_URL || ''
 
 function OrderPage() {
+    // Handles quantity change for items
+    const handleQuantityChange = (itemId, newQty) => {
+        setQuantities(prev => ({
+            ...prev,
+            [itemId]: newQty,
+        }));
+    };
+    // Helper to get cart items for WhatsApp message
+    const getCartItems = () => {
+        return items
+            .filter(item => Number(quantities[item.id]) > 0)
+            .map(item => ({
+                itemId: item.id,
+                name: item.name,
+                unit: item.unit,
+                price: item.price,
+                quantity: Number(quantities[item.id]),
+                lineTotal: Number(item.price) * Number(quantities[item.id])
+            }));
+    };
     const [items, setItems] = useState([])
     const [config, setConfig] = useState({ whatsappPhone: '971561510897', deliveryFee: 0 })
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
+    // WhatsApp number (fixed, no plus)
+    const WHATSAPP_NUMBER = "971500000000";
     // Customer info
     const [customerName, setCustomerName] = useState('')
     const [flatNumber, setFlatNumber] = useState('')
@@ -46,135 +82,62 @@ function OrderPage() {
         }
     }
 
-    const handleQuantityChange = (itemId, value) => {
-        setQuantities(prev => ({
-            ...prev,
-            [itemId]: parseFloat(value) || 0
-        }))
-    }
 
-    const getCartItems = () => {
-        return items
-            .filter(item => quantities[item.id] > 0)
-            .map(item => ({
-                itemId: item.id,
-                name: item.name,
-                unit: item.unit,
-                price: item.price,
-                quantity: quantities[item.id],
-                lineTotal: item.price * quantities[item.id]
-            }))
-    }
 
-    const calculateTotal = () => {
-        const cartItems = getCartItems()
-        const itemsTotal = cartItems.reduce((sum, item) => sum + item.lineTotal, 0)
-        const grandTotal = itemsTotal + config.deliveryFee
-        return { itemsTotal, grandTotal }
-    }
+    const vegetables = items.filter(item => item.category === 'vegetable');
+    const fruits = items.filter(item => item.category === 'fruit');
+    const { itemsTotal, grandTotal } = calculateTotal(items, quantities, config.deliveryFee);
+    // WhatsApp send handler
+    const handleSendWhatsApp = (e) => {
+        if (e) e.preventDefault();
+        setError("");
 
-    const validateForm = () => {
-        if (!customerName.trim()) {
-            setError('Please enter your name')
-            return false
+        // Validate form (simple)
+        if (!customerName.trim() || !flatNumber.trim() || !deliveryDay) {
+            setError("Please fill all required fields.");
+            return;
         }
-        if (!flatNumber.trim()) {
-            setError('Please enter your flat number')
-            return false
-        }
-        if (!deliveryDay) {
-            setError('Please select a delivery day')
-            return false
-        }
-        const cartItems = getCartItems()
+        const cartItems = getCartItems();
         if (cartItems.length === 0) {
-            setError('Please select at least one item')
-            return false
-        }
-        return true
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        setError('')
-
-        if (!validateForm()) {
-            return
+            setError("Please select at least one item.");
+            return;
         }
 
-        const cartItems = getCartItems()
-        const { itemsTotal, grandTotal } = calculateTotal()
+        // Calculate totals for WhatsApp message
+        const totals = calculateTotal(items, quantities, config.deliveryFee);
 
-        const order = {
-            customerName,
-            flatNumber,
-            deliveryDay,
-            phone,
-            notes,
-            items: cartItems,
-            itemsTotal,
-            deliveryFee: config.deliveryFee,
-            grandTotal
-        }
+        // Build WhatsApp message
+        const header = [
+            "🛒 Smart Saving Club Order",
+            "",
+            `Name: ${customerName || "-"}`,
+            `Flat: ${flatNumber || "-"}`,
+            `Delivery day: ${deliveryDay || "-"}`,
+            phone ? `WhatsApp: ${phone}` : null,
+            notes ? `Notes: ${notes}` : null,
+            "",
+            "Items:",
+        ].filter(Boolean).join("\n");
 
-        try {
-            const response = await fetch(`${API_URL}/api/orders`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(order)
-            })
+        const itemsLines = cartItems.map(item => {
+            const unit = item.unit || "pc";
+            return `• ${item.name} – ${item.quantity} ${unit} @ ${item.price} AED/${unit}`;
+        });
 
-            const data = await response.json()
+        const totalsLines = [
+            "",
+            `Items total: ${totals.itemsTotal.toFixed(2)} AED`,
+            `Grand total: ${totals.grandTotal.toFixed(2)} AED`,
+        ];
 
-            if (data.success) {
-                // Build WhatsApp message
-                let message = `🌟 Smart Saving Club Order\n\n`
-                message += `Name: ${customerName}\n`
-                message += `Flat: ${flatNumber}\n`
-                message += `Delivery: ${deliveryDay}\n`
-                if (phone) message += `Phone: ${phone}\n`
-                message += `\n📦 Items:\n`
+        const message = [header, ...itemsLines, ...totalsLines].join("\n");
+        const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+        window.location.href = url;
 
-                cartItems.forEach(item => {
-                    message += `• ${item.name}: ${item.quantity} ${item.unit} × ${item.price} AED = ${item.lineTotal.toFixed(2)} AED\n`
-                })
-
-                message += `\n💰 Total Summary:\n`
-                message += `Items: ${itemsTotal.toFixed(2)} AED\n`
-                if (config.deliveryFee > 0) {
-                    message += `Delivery: ${config.deliveryFee.toFixed(2)} AED\n`
-                }
-                message += `TOTAL: ${grandTotal.toFixed(2)} AED\n`
-
-                if (notes) {
-                    message += `\n📝 Notes: ${notes}`
-                }
-
-                const whatsappUrl = `https://wa.me/${config.whatsappPhone}?text=${encodeURIComponent(message)}`
-                window.open(whatsappUrl, '_blank')
-
-                setShowSuccess(true)
-
-                // Reset form
-                setCustomerName('')
-                setFlatNumber('')
-                setDeliveryDay('Today')
-                setPhone('')
-                setNotes('')
-                setQuantities({})
-
-                setTimeout(() => setShowSuccess(false), 5000)
-            } else {
-                setError(data.error || 'Failed to submit order')
-            }
-        } catch (err) {
-            setError('Failed to submit order. Please try again.')
-        }
-    }
-
-    const vegetables = items.filter(item => item.category === 'vegetable')
-    const fruits = items.filter(item => item.category === 'fruit')
-    const { itemsTotal, grandTotal } = calculateTotal()
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 5000);
+        // Do NOT reset form or quantities
+    };
 
     if (loading) {
         return (
@@ -217,7 +180,7 @@ function OrderPage() {
                 )}
 
                 {/* Customer Info Form */}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSendWhatsApp}>
                     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                         <h2 className="text-xl font-bold mb-4 text-gray-800">📋 Your Information</h2>
 
@@ -396,11 +359,11 @@ function ItemCard({ item, quantity, onQuantityChange }) {
             <div className="mt-3 flex items-center gap-2">
                 <input
                     type="number"
-                    min="0"
+                    min={0}
                     step={step}
                     value={quantity || ''}
                     onChange={(e) => onQuantityChange(item.id, e.target.value)}
-                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="quantity-input w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="0"
                 />
                 <span className="text-sm text-gray-600">{item.unit}</span>

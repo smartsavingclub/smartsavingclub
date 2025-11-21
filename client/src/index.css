@@ -17,6 +17,18 @@ input[type="number"]::-webkit-outer-spin-button {
     opacity: 1;
 }
 
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+    -webkit-appearance: auto;
+    margin: 0;
+    opacity: 1;
+}
+
+.quantity-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 .item-card {
     transition: transform 0.2s, box-shadow 0.2s;
 }
