@@ -331,6 +331,21 @@ function ItemCard({ item, quantity, onQuantityChange }) {
     const lineTotal = item.price * quantity
     const step = item.unit === 'kg' ? 0.25 : 1
 
+    const handleDecrement = () => {
+        const newQty = Math.max(0, (quantity || 0) - step);
+        onQuantityChange(item.id, newQty);
+    };
+
+    const handleIncrement = () => {
+        const newQty = (quantity || 0) + step;
+        onQuantityChange(item.id, newQty);
+    };
+
+    const handleInputChange = (e) => {
+        const value = parseFloat(e.target.value) || 0;
+        onQuantityChange(item.id, Math.max(0, value));
+    };
+
     return (
         <div className="item-card border border-gray-200 rounded-lg p-4 bg-white">
             <div className="flex gap-3">
@@ -357,15 +372,31 @@ function ItemCard({ item, quantity, onQuantityChange }) {
             </div>
 
             <div className="mt-3 flex items-center gap-2">
-                <input
-                    type="number"
-                    min={0}
-                    step={step}
-                    value={quantity || ''}
-                    onChange={(e) => onQuantityChange(item.id, e.target.value)}
-                    className="quantity-input w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="0"
-                />
+                <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
+                    <button
+                        type="button"
+                        onClick={handleDecrement}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 font-bold text-lg transition-colors"
+                    >
+                        −
+                    </button>
+                    <input
+                        type="number"
+                        min={0}
+                        step={step}
+                        value={quantity || ''}
+                        onChange={handleInputChange}
+                        className="w-16 px-2 py-2 text-center border-none focus:outline-none focus:ring-0"
+                        placeholder="0"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleIncrement}
+                        className="px-3 py-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 font-bold text-lg transition-colors"
+                    >
+                        +
+                    </button>
+                </div>
                 <span className="text-sm text-gray-600">{item.unit}</span>
                 {quantity > 0 && (
                     <span className="ml-auto font-semibold text-primary">
